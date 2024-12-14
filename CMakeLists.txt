@@ -34,7 +34,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 # 设置项目名称
-project(CentralNode LANGUAGES C CXX ASM)
+project(CH592_CLion_TamplateralNode LANGUAGES C CXX ASM)
 
 
 # MCU设置与编译设置
