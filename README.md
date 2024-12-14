@@ -18,7 +18,29 @@
 Path=C:\Path\MounRiver\MounRiver_Studio\toolchain\RISC-V Embedded GCC\bin\
 ```
 
-4. Enjoy！
+4. 添加或修改openocd的文件位置
+
+   ![image-20241214203058256](http://github.xutongxin.me/https://raw.githubusercontent.com/xutongxin1/PictureBed/master/2024After/image-20241214203058256.png)
+
+5. 添加openocd下载并运行配置
+
+   ![image-20241214221636911](http://github.xutongxin.me/https://raw.githubusercontent.com/xutongxin1/PictureBed/master/2024After/image-20241214221636911.png)
+
+   要修改source下的文件路径
+
+   ![image-20241214221904285](http://github.xutongxin.me/https://raw.githubusercontent.com/xutongxin1/PictureBed/master/2024After/image-20241214221904285.png)
+
+   其中source请直接引用官方MRS下，openocd的**bin**下的文件，别搞错，因为同名很多，文件应该大概长这样
+
+   ![image-20241214200056012](http://github.xutongxin.me/https://raw.githubusercontent.com/xutongxin1/PictureBed/master/2024After/image-20241214200056012.png)
+
+   ![image-20241214200249142](http://github.xutongxin.me/https://raw.githubusercontent.com/xutongxin1/PictureBed/master/2024After/image-20241214200249142.png)
+
+6. 添加一次.gdbinit到你的用户文件夹下，使得模板下gdbinit的可以有效加载
+
+   ![image-20241214203010741](http://github.xutongxin.me/https://raw.githubusercontent.com/xutongxin1/PictureBed/master/2024After/image-20241214203010741.png)
+
+7. Enjoy！
 
 
 
@@ -28,4 +50,12 @@ Path=C:\Path\MounRiver\MounRiver_Studio\toolchain\RISC-V Embedded GCC\bin\
 
 A:似乎没有，我对比过在修改芯片型号后官方MRS的项目文件没有一点变化除了一个信息文件，考虑到库也一样可能确实就是没区别吧
 
-如果不放心可以打开模板中的MRS修改芯片型号后再继续回到CLion编程，默认是592F
+但是还是建议打开模板中的MRS修改芯片型号后再继续回到CLion编程
+
+模板默认是592F
+
+
+
+### Q:Error: The specified debug interface was not found (wlinke)
+
+A:没选正确的openocd路径
