@@ -94,11 +94,11 @@ int main(void)
 {
     SetSysClock(CLK_SOURCE_PLL_60MHz);
 
-//#ifdef DEBUG
+#ifdef DEBUG
     GPIOA_SetBits(bTXD1);
     GPIOA_ModeCfg(bTXD1, GPIO_ModeOut_PP_5mA);
     UART1_DefInit();
-//#endif
+#endif
     PRINT("%s\n", VER_LIB);
     PRINT("%s\n", VER_MESH_LIB);
     CH59x_BLEInit();

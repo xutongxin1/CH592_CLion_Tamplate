@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR riscv)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
-#æ‰¾ç¼–è¯‘å™¨ï¼Œéœ€è¦è‡ªè¡Œå¢åŠ PATHå˜é‡
+#ÕÒ±àÒëÆ÷£¬ĞèÒª×ÔĞĞÔö¼ÓPATH±äÁ¿
 if (0)
     set(CMAKE_C_COMPILER riscv-none-elf-gcc)
     set(CMAKE_CXX_COMPILER riscv-none-elf-g++)
@@ -33,36 +34,24 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-# è®¾ç½®é¡¹ç›®åç§°
-project(CH592_CLion_TamplateralNode LANGUAGES C CXX ASM)
+# ÉèÖÃÏîÄ¿Ãû³Æ
+project(CH592_CLion_Tamplate LANGUAGES C CXX ASM)
 
 
-# MCUè®¾ç½®ä¸ç¼–è¯‘è®¾ç½®
-add_compile_options(-march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -lISP592 -lMESH -lCH59xBLE)
+# MCUÉèÖÃÓë±àÒëÉèÖÃ
+add_compile_options(-march=rv32imac -mabi=ilp32
+        -mcmodel=medany -msmall-data-limit=8
+        -mno-save-restore -Os -fmessage-length=0
+        -fsigned-char -ffunction-sections
+        -fdata-sections -fno-common -g -DDEBUG=1
+        -DBLE_MEMHEAP_SIZE=4096 -DHAL_KEY=1
+        -lISP592 -lMESH -lCH59xBLE)
 
-add_compile_options(-msave-restore -fmessage-length=0
-        -fsigned-char -ffunction-sections -fdata-sections
-        -fno-common -Wunused -Wuninitialized -lprintf -g -std=gnu99)
 
-# å¤„ç†ASMæ–‡ä»¶
+# ´¦ÀíASMÎÄ¼ş
 add_compile_options($<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>)
 
-#å¤„ç†ç¼–è¯‘ç­‰çº§
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-    message(STATUS "Maximum optimization for speed")
-    add_compile_options(-Ofast)
-elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-    message(STATUS "Maximum optimization for speed, debug info included")
-    add_compile_options(-Ofast -g)
-elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
-    message(STATUS "Maximum optimization for size")
-    add_compile_options(-Os)
-else ()
-    message(STATUS "Minimal optimization, debug info included")
-    add_compile_options(-Og -g)
-endif ()
-
-#æ‰¾æ–‡ä»¶
+#ÕÒÎÄ¼ş
 include_directories(
         "../CH592Lib/HAL/include"
         "../CH592Lib/StdPeriphDriver/inc"
@@ -75,14 +64,14 @@ include_directories(
 file(GLOB_RECURSE SOURCES
         "APP/*.c"
         "../CH592Lib/Startup/startup_CH592.S"
+        "../CH592Lib/LIB/ble_task_scheduler.S"
         "../CH592Lib/*.c"
-        )
-
+)
 
 
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/../CH592Lib/Ld/LINK.ld)
 
-# é“¾æ¥è®¾ç½®
+# Á´½ÓÉèÖÃ
 add_link_options(-march=rv32imac -mabi=ilp32)
 add_link_options(-ffunction-sections -fdata-sections -fmessage-length=0 -fstack-usage)
 add_link_options(-Wall -Wfatal-errors)
@@ -91,23 +80,28 @@ add_link_options(-T ${LINKER_SCRIPT})
 add_link_options(-nostartfiles -Xlinker --gc-sections)
 add_link_options("-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map" -Wl,--cref)
 add_link_options(--specs=nano.specs --specs=nosys.specs -lprintf)
-
-#ç”Ÿæˆelfè®¾ç½®
+#add_link_options(-lISP592 -lMESH -lCH59xBLE)
+#Éú³ÉelfÉèÖÃ
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
-# æŸ¥æ‰¾æ‰€æœ‰ .a æ–‡ä»¶
-file(GLOB_RECURSE STATIC_LIBS "../CH592Lib/*.a")
+target_link_directories(${PROJECT_NAME}.elf PRIVATE
+        ../
+        ${CMAKE_SOURCE_DIR}/../CH592Lib/MESH_LIB
+        ${CMAKE_SOURCE_DIR}/../CH592Lib/LIB
+        ${CMAKE_SOURCE_DIR}/../CH592Lib/StdPeriphDriver
+)
+target_link_libraries(${PROJECT_NAME}.elf
+        ISP592
+        MESH
+        CH59xBLE
+)
 
-# éå†å¹¶é“¾æ¥æ‰€æœ‰ .a é™æ€åº“
-foreach(lib ${STATIC_LIBS})
-    target_link_libraries(${PROJECT_NAME}.elf ${lib})
-endforeach()
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
 set(LIST_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.list)
 
-#ç”Ÿæˆhexè®¾ç½®
+#Éú³ÉhexÉèÖÃ
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMAND ${SIZE} --format=berkeley $<TARGET_FILE:${PROJECT_NAME}.elf>
         COMMAND ${CMAKE_OBJDUMP} --all-headers --demangle --disassemble $<TARGET_FILE:${PROJECT_NAME}.elf> > ${LIST_FILE}
