@@ -45,7 +45,7 @@ add_compile_options(-march=rv32imac -mabi=ilp32
         -fsigned-char -ffunction-sections
         -fdata-sections -fno-common -g -DDEBUG=1
         -DBLE_MEMHEAP_SIZE=4096 -DHAL_KEY=1
-        -lISP592 -lMESH -lCH59xBLE)
+)
 
 
 # 处理ASM文件
@@ -72,10 +72,11 @@ file(GLOB_RECURSE SOURCES
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/../CH592Lib/Ld/LINK.ld)
 
 # 链接设置
-add_link_options(-march=rv32imac -mabi=ilp32)
-add_link_options(-ffunction-sections -fdata-sections -fmessage-length=0 -fstack-usage)
-add_link_options(-Wall -Wfatal-errors)
-add_link_options(-Wl,-check-sections -Wl,-fatal-warnings -Wl,--gc-sections -Wl,--print-memory-usage)
+add_link_options(-march=rv32imac -mabi=ilp32 -mcmodel=medany -msmall-data-limit=8
+        -mno-save-restore -Os -fmessage-length=0
+        -fsigned-char -ffunction-sections -fdata-sections -fno-common
+        -g)
+add_link_options(-Wl,--print-memory-usage)
 add_link_options(-T ${LINKER_SCRIPT})
 add_link_options(-nostartfiles -Xlinker --gc-sections)
 add_link_options("-Wl,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map" -Wl,--cref)
@@ -104,7 +105,7 @@ set(LIST_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.list)
 #生成hex设置
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMAND ${SIZE} --format=berkeley $<TARGET_FILE:${PROJECT_NAME}.elf>
-        COMMAND ${CMAKE_OBJDUMP} --all-headers --demangle --disassemble $<TARGET_FILE:${PROJECT_NAME}.elf> > ${LIST_FILE}
+        COMMAND ${CMAKE_OBJDUMP} --source --all-headers --demangle --line-numbers --wide $<TARGET_FILE:${PROJECT_NAME}.elf> > ${LIST_FILE}
         COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
         COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
         COMMENT "Building ${HEX_FILE}
